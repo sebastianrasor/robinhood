@@ -1,3 +1,15 @@
+/*
+ * Robin Hood
+ *
+ * Copyright (C) 2022 Sebastian Rasor <https://www.sebastianrasor.com>
+ * Copyright (C) 2021 Meteor Development <https://github.com/MeteorDevelopment>
+ *
+ * The following code is a derivative work of the code from the Meteor Client
+ * distribution (https://github.com/MeteorDevelopment/meteor-client), which is
+ * licensed GPLv3. This code therefore is also licensed under the terms of the
+ * GNU Public License, version 3.
+ */
+
 package com.sebastianrasor.robinhood;
 
 import com.mojang.blaze3d.systems.RenderSystem;
