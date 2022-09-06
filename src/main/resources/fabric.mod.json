@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "robinhood",
+  "version": "${version}",
+
+  "name": "Robin Hood",
+  "description": "Displays a predicted trajectory for projectiles.",
+  "authors": [
+    "Sebastian Rasor"
+  ],
+  "contact": {
+    "homepage": "https://robinhood.sebastianrasor.com/",
+    "sources": "https://github.com/sebastianrasor/robinhood"
+  },
+
+  "license": "GPL-3.0",
+  "icon": "assets/robinhood/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.sebastianrasor.robinhood.RobinHoodClient"
+    ]
+  },
+  "mixins": [],
+
+  "depends": {
+    "fabricloader": ">=0.14.9",
+    "fabric-api": "*",
+    "minecraft": "~1.19",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
