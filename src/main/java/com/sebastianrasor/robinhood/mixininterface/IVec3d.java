@@ -6,7 +6,6 @@
 package com.sebastianrasor.robinhood.mixininterface;
 
 import com.sebastianrasor.robinhood.utils.misc.Vec3;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
 public interface IVec3d {
@@ -16,9 +15,6 @@ public interface IVec3d {
         set(vec.getX(), vec.getY(), vec.getZ());
     }
     default void set(Vec3 vec) {
-        set(vec.x, vec.y, vec.z);
-    }
-    default void set(Vec3d vec) {
         set(vec.x, vec.y, vec.z);
     }
     void setXZ(double x, double z);
