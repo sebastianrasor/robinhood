@@ -6,10 +6,16 @@
   "name": "Robin Hood",
   "description": "Displays a predicted trajectory for projectiles.",
   "authors": [
-    "Sebastian Rasor"
+	{
+	  "name:": "Sebastian Rasor",
+	  "contact": {
+	  	"homepage": "https://www.sebastianrasor.com"
+	  }
+  	}
   ],
   "contact": {
-    "homepage": "https://robinhood.sebastianrasor.com/",
+    "homepage": "https://robinhood.sebastianrasor.com",
+    "issues": "https://github.com/sebastianrasor/robinhood/issues",
     "sources": "https://github.com/sebastianrasor/robinhood"
   },
 
