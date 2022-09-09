@@ -28,7 +28,9 @@
       "com.sebastianrasor.robinhood.RobinHoodClient"
     ]
   },
-  "mixins": [],
+  "mixins": [
+    "robinhood.mixins.json"
+  ],
 
   "depends": {
     "fabricloader": ">=0.14.9",

@@ -12,6 +12,8 @@
 
 package com.sebastianrasor.robinhood;
 
+import com.mojang.blaze3d.platform.GlStateManager.DstFactor;
+import com.mojang.blaze3d.platform.GlStateManager.SrcFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.sebastianrasor.robinhood.utils.entity.ProjectileEntitySimulator;
 import com.sebastianrasor.robinhood.utils.misc.Pool;
@@ -45,13 +47,22 @@ import net.minecraft.util.math.Vec3d;
 
 public class RobinHoodClient implements ClientModInitializer {
 	public static MinecraftClient mc;
-	private final ProjectileEntitySimulator simulator = new ProjectileEntitySimulator();
-	private final Pool<Vec3> vec3s = new Pool<>(Vec3::new);
-	private final List<Path> paths = new ArrayList<>();
+	private static final ProjectileEntitySimulator simulator = new ProjectileEntitySimulator();
+	private static final Pool<Vec3> vec3s = new Pool<>(Vec3::new);
+	private static final List<Path> paths = new ArrayList<>();
 
+	public static boolean isRendering() {
+		for (Path path : paths) {
+			if (!path.points.isEmpty()) {
+				return true;
+			}
+		}
+		return false;
+	}
 	@Override
 	public void onInitializeClient() {
 		mc = MinecraftClient.getInstance();
+
 		WorldRenderEvents.BEFORE_DEBUG_RENDER.register((context) -> {
 			for (Path path : paths) path.clear();
 
@@ -63,14 +74,14 @@ public class RobinHoodClient implements ClientModInitializer {
 
 			float tickDelta = context.tickDelta();
 			// Calculate paths
-			if (!simulator.set(mc.player, itemStack, 0, true, tickDelta)) return;
+			if (!simulator.set(mc.player, itemStack, 0, tickDelta)) return;
 			getEmptyPath().calculate();
 
 			if (itemStack.getItem() instanceof CrossbowItem && EnchantmentHelper.getLevel(Enchantments.MULTISHOT, itemStack) > 0) {
-				if (!simulator.set(mc.player, itemStack, -10, true, tickDelta)) return;
+				if (!simulator.set(mc.player, itemStack, -10, tickDelta)) return;
 				getEmptyPath().calculate();
 
-				if (!simulator.set(mc.player, itemStack, 10, true, tickDelta)) return;
+				if (!simulator.set(mc.player, itemStack, 10, tickDelta)) return;
 				getEmptyPath().calculate();
 			}
 
@@ -122,24 +133,26 @@ public class RobinHoodClient implements ClientModInitializer {
 		public void render(WorldRenderContext context) {
 			RenderSystem.enableDepthTest();
 			RenderSystem.setShader(GameRenderer::getPositionColorShader);
+			RenderSystem.enableBlend();
+			RenderSystem.blendFuncSeparate(SrcFactor.ONE_MINUS_DST_COLOR, DstFactor.ONE_MINUS_SRC_COLOR, SrcFactor.ONE, DstFactor.ZERO); // same blending as crosshair
 			Tessellator tessellator = Tessellator.getInstance();
 			BufferBuilder bufferBuilder = tessellator.getBuffer();
 			RenderSystem.disableTexture();
-			RenderSystem.disableBlend();
 
 			Vec3d cameraPos = context.camera().getPos();
 			double cameraX = cameraPos.x;
 			double cameraY = cameraPos.y;
 			double cameraZ = cameraPos.z;
 
+
+			RenderSystem.lineWidth(10F); // capped at 2.5 somewhere deep in the minecraft source
 			bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
 
 			for (Vec3 point : points) {
-				bufferBuilder.vertex(point.x - cameraX, point.y - cameraY, point.z - cameraZ).color(1F, 1F, 0F, 1F).next();
+				bufferBuilder.vertex(point.x - cameraX, point.y - cameraY, point.z - cameraZ).color(1F, 1F, 1F, 1F).next();
 			}
 
 			tessellator.draw();
-			RenderSystem.enableBlend();
 			RenderSystem.enableTexture();
 		}
 	}

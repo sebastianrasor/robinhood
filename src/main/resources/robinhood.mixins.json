@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.sebastianrasor.robinhood.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [],
+  "client": [
+    "CrossbowItemAccessor",
+    "GameRendererMixin",
+    "InGameHudMixin",
+    "ProjectileInGroundAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
