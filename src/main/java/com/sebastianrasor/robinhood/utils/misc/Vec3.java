@@ -78,6 +78,10 @@ public class Vec3 {
         return subtract(vec.x, vec.y, vec.z);
     }
 
+    public Vec3 subtract(Vec3 vec) {
+        return subtract(vec.x, vec.y, vec.z);
+    }
+
     public Vec3 multiply(double x, double y, double z) {
         this.x *= x;
         this.y *= y;

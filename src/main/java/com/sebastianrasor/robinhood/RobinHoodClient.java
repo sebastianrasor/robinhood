@@ -131,29 +131,39 @@ public class RobinHoodClient implements ClientModInitializer {
 		}
 
 		public void render(WorldRenderContext context) {
-			RenderSystem.enableDepthTest();
-			RenderSystem.setShader(GameRenderer::getPositionColorShader);
-			RenderSystem.enableBlend();
-			RenderSystem.blendFuncSeparate(SrcFactor.ONE_MINUS_DST_COLOR, DstFactor.ONE_MINUS_SRC_COLOR, SrcFactor.ONE, DstFactor.ZERO); // same blending as crosshair
 			Tessellator tessellator = Tessellator.getInstance();
 			BufferBuilder bufferBuilder = tessellator.getBuffer();
-			RenderSystem.disableTexture();
+			RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+			RenderSystem.enableDepthTest();
+			RenderSystem.enableBlend();
+			RenderSystem.blendFuncSeparate(SrcFactor.ONE_MINUS_DST_COLOR, DstFactor.ONE_MINUS_SRC_COLOR, SrcFactor.ONE, DstFactor.ZERO); // same blending as crosshair
+			RenderSystem.lineWidth(5.0f);
 
-			Vec3d cameraPos = context.camera().getPos();
-			double cameraX = cameraPos.x;
-			double cameraY = cameraPos.y;
-			double cameraZ = cameraPos.z;
+			Vec3d cameraPosition = context.camera().getPos();
 
+			bufferBuilder.begin(VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
 
-			RenderSystem.lineWidth(10F); // capped at 2.5 somewhere deep in the minecraft source
-			bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-
+			Vec3 normal = null;
+			int i = 0;
 			for (Vec3 point : points) {
-				bufferBuilder.vertex(point.x - cameraX, point.y - cameraY, point.z - cameraZ).color(1F, 1F, 1F, 1F).next();
-			}
+				i++;
 
+				point.subtract(cameraPosition);
+
+				if (i < points.size()) {
+					Vec3 nextPoint = points.get(i);
+					nextPoint = new Vec3(nextPoint.x, nextPoint.y, nextPoint.z);
+					nextPoint.subtract(cameraPosition);
+					normal = nextPoint.subtract(point).normalize();
+				}
+
+				bufferBuilder
+						.vertex((float)point.x, (float)point.y, (float)point.z)
+						.color(1F, 1F, 1F, 1F)
+						.normal((float)normal.x, (float)normal.y, (float)normal.z)
+						.next();
+			}
 			tessellator.draw();
-			RenderSystem.enableTexture();
 		}
 	}
 }
