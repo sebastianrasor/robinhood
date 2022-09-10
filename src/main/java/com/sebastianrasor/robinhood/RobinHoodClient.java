@@ -15,15 +15,18 @@ package com.sebastianrasor.robinhood;
 import com.mojang.blaze3d.platform.GlStateManager.DstFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SrcFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.sebastianrasor.robinhood.utils.FakeWorld;
 import com.sebastianrasor.robinhood.utils.entity.ProjectileEntitySimulator;
 import com.sebastianrasor.robinhood.utils.misc.Pool;
 import com.sebastianrasor.robinhood.utils.misc.Vec3;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
@@ -32,18 +35,27 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.BowItem;
+import net.minecraft.item.BucketItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.EggItem;
 import net.minecraft.item.EnderPearlItem;
 import net.minecraft.item.ExperienceBottleItem;
 import net.minecraft.item.FishingRodItem;
+import net.minecraft.item.FluidModificationItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.SnowballItem;
 import net.minecraft.item.ThrowablePotionItem;
 import net.minecraft.item.TridentItem;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.UseAction;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.BlockView;
 
 public class RobinHoodClient implements ClientModInitializer {
 	public static MinecraftClient mc;
@@ -62,15 +74,41 @@ public class RobinHoodClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		mc = MinecraftClient.getInstance();
-
-		WorldRenderEvents.BEFORE_DEBUG_RENDER.register((context) -> {
+		WorldRenderEvents.LAST.register((context) -> {
 			for (Path path : paths) path.clear();
 
 			// Get item
-			ItemStack itemStack = mc.player.getMainHandStack();
-			if (itemStack == null) itemStack = mc.player.getOffHandStack();
-			if (itemStack == null) return;
-			if (!itemFilter(itemStack.getItem())) return;
+			ClientPlayerEntity player = mc.player;
+			HitResult hit = mc.crosshairTarget;
+			ItemStack itemStack = player.getMainHandStack();
+
+			// see if useOnBlock is overwritten from Item
+			boolean useOnBlockOverwritten;
+			try {
+				Class<?> itemClass = itemStack.getItem().getClass();
+				Method method = itemClass.getMethod("useOnBlock", ItemUsageContext.class);
+				Class<?> declaringClass = method.getDeclaringClass();
+				useOnBlockOverwritten = declaringClass != Item.class;
+			} catch (NoSuchMethodException e) {
+				throw new RuntimeException(e);
+			}
+
+			// simulate usage in a fake world to see if it's successful
+			ActionResult result = ActionResult.FAIL;
+			if (useOnBlockOverwritten && hit.getType() == Type.BLOCK) {
+				FakeWorld fakeWorld = new FakeWorld();
+				ItemUsageContext itemUsageContext = new ItemUsageContext(fakeWorld, player, Hand.MAIN_HAND, itemStack, (BlockHitResult) hit);
+				result = itemStack.useOnBlock(itemUsageContext);
+				System.out.println(result);
+			}
+
+			boolean isBucket = itemStack.getItem() instanceof FluidModificationItem;
+			if (itemStack.isEmpty()) itemStack = player.getOffHandStack();
+			if (itemStack.getUseAction() == UseAction.NONE && !useOnBlockOverwritten && !isBucket) itemStack = player.getOffHandStack();
+			if (useOnBlockOverwritten && !result.isAccepted()) itemStack = player.getOffHandStack();
+			if (isBucket && hit.getType() != Type.BLOCK) itemStack = player.getOffHandStack();
+
+			if (!itemFilter(itemStack.getItem()));
 
 			float tickDelta = context.tickDelta();
 			// Calculate paths
@@ -137,7 +175,7 @@ public class RobinHoodClient implements ClientModInitializer {
 			RenderSystem.enableDepthTest();
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(SrcFactor.ONE_MINUS_DST_COLOR, DstFactor.ONE_MINUS_SRC_COLOR, SrcFactor.ONE, DstFactor.ZERO); // same blending as crosshair
-			RenderSystem.lineWidth(5.0f);
+			RenderSystem.lineWidth(3f);
 
 			Vec3d cameraPosition = context.camera().getPos();
 
