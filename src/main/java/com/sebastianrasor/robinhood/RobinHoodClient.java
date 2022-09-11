@@ -111,7 +111,7 @@ public class RobinHoodClient implements ClientModInitializer {
 
 			boolean isBucket = itemStack.getItem() instanceof FluidModificationItem;
 			if (itemStack.isEmpty()) itemStack = player.getOffHandStack();
-			if (itemStack.getUseAction() == UseAction.NONE && !useOnBlockOverwritten && !isBucket) itemStack = player.getOffHandStack();
+			if (itemStack.getUseAction() == UseAction.NONE && !useOnBlockOverwritten && !itemFilter(itemStack.getItem()) && !isBucket) itemStack = player.getOffHandStack();
 			if (useOnBlockOverwritten && !result.isAccepted()) itemStack = player.getOffHandStack();
 			if (isBucket && hit.getType() != Type.BLOCK) itemStack = player.getOffHandStack();
 
