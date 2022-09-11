@@ -89,14 +89,14 @@ public class RobinHoodClient implements ClientModInitializer {
 			ItemStack itemStack = player.getMainHandStack();
 
 			// see if useOnBlock is overwritten from Item
-			boolean useOnBlockOverwritten;
+			boolean useOnBlockOverwritten = false;
 			try {
 				Class<?> itemClass = itemStack.getItem().getClass();
 				Method method = itemClass.getMethod("useOnBlock", ItemUsageContext.class);
 				Class<?> declaringClass = method.getDeclaringClass();
 				useOnBlockOverwritten = declaringClass != Item.class;
 			} catch (NoSuchMethodException e) {
-				throw new RuntimeException(e);
+
 			}
 
 			// simulate usage in a fake world to see if it's successful
