@@ -208,7 +208,7 @@ public class RobinHoodClient implements ClientModInitializer {
 
 				bufferBuilder
 						.vertex((float)point.x, (float)point.y, (float)point.z)
-						.color(config.lineColor)
+						.color(config.lineColor + 0xFF000000)
 						.normal((float)normal.x, (float)normal.y, (float)normal.z)
 						.next();
 			}
