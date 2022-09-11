@@ -102,7 +102,6 @@ public class RobinHoodClient implements ClientModInitializer {
 				FakeWorld fakeWorld = new FakeWorld();
 				ItemUsageContext itemUsageContext = new ItemUsageContext(fakeWorld, player, Hand.MAIN_HAND, itemStack, (BlockHitResult) hit);
 				result = itemStack.useOnBlock(itemUsageContext);
-				System.out.println(result);
 			}
 
 			boolean isBucket = itemStack.getItem() instanceof FluidModificationItem;
