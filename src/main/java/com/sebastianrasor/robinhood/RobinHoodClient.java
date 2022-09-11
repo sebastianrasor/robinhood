@@ -22,6 +22,8 @@ import com.sebastianrasor.robinhood.utils.misc.Vec3;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -35,7 +37,6 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.BowItem;
-import net.minecraft.item.BucketItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.EggItem;
 import net.minecraft.item.EnderPearlItem;
@@ -55,7 +56,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
 
 public class RobinHoodClient implements ClientModInitializer {
 	public static MinecraftClient mc;
@@ -73,7 +73,10 @@ public class RobinHoodClient implements ClientModInitializer {
 	}
 	@Override
 	public void onInitializeClient() {
+		AutoConfig.register(RobinHoodConfig.class, JanksonConfigSerializer::new);
+
 		mc = MinecraftClient.getInstance();
+
 		WorldRenderEvents.LAST.register((context) -> {
 			for (Path path : paths) path.clear();
 
@@ -169,13 +172,17 @@ public class RobinHoodClient implements ClientModInitializer {
 		}
 
 		public void render(WorldRenderContext context) {
+			RobinHoodConfig config = AutoConfig.getConfigHolder(RobinHoodConfig.class).getConfig();
+
 			Tessellator tessellator = Tessellator.getInstance();
 			BufferBuilder bufferBuilder = tessellator.getBuffer();
 			RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
 			RenderSystem.enableDepthTest();
-			RenderSystem.enableBlend();
-			RenderSystem.blendFuncSeparate(SrcFactor.ONE_MINUS_DST_COLOR, DstFactor.ONE_MINUS_SRC_COLOR, SrcFactor.ONE, DstFactor.ZERO); // same blending as crosshair
-			RenderSystem.lineWidth(3f);
+			if (config.useBlending) {
+				RenderSystem.enableBlend();
+				RenderSystem.blendFuncSeparate(SrcFactor.ONE_MINUS_DST_COLOR, DstFactor.ONE_MINUS_SRC_COLOR, SrcFactor.ONE, DstFactor.ZERO); // same blending as crosshair
+			}
+			RenderSystem.lineWidth(config.lineWidth);
 
 			Vec3d cameraPosition = context.camera().getPos();
 
@@ -197,7 +204,7 @@ public class RobinHoodClient implements ClientModInitializer {
 
 				bufferBuilder
 						.vertex((float)point.x, (float)point.y, (float)point.z)
-						.color(1F, 1F, 1F, 1F)
+						.color(config.lineColor)
 						.normal((float)normal.x, (float)normal.y, (float)normal.z)
 						.next();
 			}

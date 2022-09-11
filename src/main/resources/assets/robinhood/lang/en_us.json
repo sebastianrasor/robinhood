@@ -1,0 +1,6 @@
+{
+  "text.autoconfig.robinhood.title": "Robin Hood Options",
+  "text.autoconfig.robinhood.option.lineWidth": "Rendered Trajectory Width",
+  "text.autoconfig.robinhood.option.lineColor": "Rendered Trajectory Color",
+  "text.autoconfig.robinhood.option.useBlending": "Pixel Blending"
+}
