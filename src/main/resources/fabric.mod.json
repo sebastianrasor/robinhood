@@ -26,6 +26,9 @@
   "entrypoints": {
     "client": [
       "com.sebastianrasor.robinhood.RobinHoodClient"
+    ],
+    "modmenu": [
+      "com.sebastianrasor.robinhood.ModMenuIntegration"
     ]
   },
   "mixins": [
