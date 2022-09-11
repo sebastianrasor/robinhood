@@ -59,6 +59,9 @@ import net.minecraft.util.math.Vec3d;
 
 public class RobinHoodClient implements ClientModInitializer {
 	public static MinecraftClient mc;
+
+	private FakeWorld fakeWorld;
+
 	private static final ProjectileEntitySimulator simulator = new ProjectileEntitySimulator();
 	private static final Pool<Vec3> vec3s = new Pool<>(Vec3::new);
 	private static final List<Path> paths = new ArrayList<>();
@@ -99,7 +102,9 @@ public class RobinHoodClient implements ClientModInitializer {
 			// simulate usage in a fake world to see if it's successful
 			ActionResult result = ActionResult.FAIL;
 			if (useOnBlockOverwritten && hit.getType() == Type.BLOCK) {
-				FakeWorld fakeWorld = new FakeWorld();
+				if (fakeWorld == null || fakeWorld.world != mc.world) {
+					fakeWorld = new FakeWorld();
+				}
 				ItemUsageContext itemUsageContext = new ItemUsageContext(fakeWorld, player, Hand.MAIN_HAND, itemStack, (BlockHitResult) hit);
 				result = itemStack.useOnBlock(itemUsageContext);
 			}

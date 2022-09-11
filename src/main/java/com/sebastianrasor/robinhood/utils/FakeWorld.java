@@ -38,12 +38,14 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class FakeWorld extends ClientWorld {
+  public World world;
   private static final DynamicRegistryManager registryManager = DynamicRegistryManager.BUILTIN.get();
 
   private final Scoreboard scoreboard;
 
   public FakeWorld() {
     super(null, null, null, MinecraftClient.getInstance().world.getDimensionEntry(), 3, 3, MinecraftClient.getInstance()::getProfiler, MinecraftClient.getInstance().worldRenderer, false, 0);
+    this.world = MinecraftClient.getInstance().world;
     this.scoreboard = new Scoreboard();
   }
 
